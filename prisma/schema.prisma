@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String  @id @default(cuid())
+  email                String  @unique
+  password             String
+  name                 String?
+  acumbamailAuthToken  String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  acumbamailLists      AcumbamailList[]
+  emailCampaigns       EmailCampaign[]
+  emailTemplates       EmailTemplate[]
+  subscribers          Subscriber[]
+
+  @@map("User")
+}
+
+model AcumbamailList {
+  id               String  @id @default(cuid())
+  acumbamailListId String
+  name             String
+  description      String?
+  userId           String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscribers  Subscriber[]
+  campaigns    EmailCampaign[]
+
+  @@unique([acumbamailListId, userId])
+  @@map("AcumbamailList")
+}
+
+model EmailCampaign {
+  id                       String  @id @default(cuid())
+  acumbamailCampaignId     String
+  name                     String
+  subject                  String
+  status                   String
+  sentAt                   DateTime?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  userId                   String
+  listId                   String?
+  templateId               String?
+  targetAllSubscribers     Boolean @default(true)
+  targetSpecificSubscribers String?
+  targetFilters            String?
+
+  // Relations
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list     AcumbamailList? @relation(fields: [listId], references: [id])
+  template EmailTemplate? @relation(fields: [templateId], references: [id])
+
+  @@unique([acumbamailCampaignId, userId])
+  @@map("EmailCampaign")
+}
+
+model EmailTemplate {
+  id                   String  @id @default(cuid())
+  acumbamailTemplateId String
+  name                 String
+  description          String?
+  category             String
+  htmlContent          String
+  userId               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaigns EmailCampaign[]
+
+  @@unique([acumbamailTemplateId, userId])
+  @@map("EmailTemplate")
+}
+
+model Subscriber {
+  id               String  @id @default(cuid())
+  acumbamailSubscriberId String
+  email            String
+  firstName        String?
+  lastName         String?
+  status           String
+  userId           String
+  listId           String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list AcumbamailList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([acumbamailSubscriberId, userId])
+  @@map("Subscriber")
+}
