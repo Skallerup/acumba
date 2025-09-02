@@ -158,6 +158,24 @@ export class AcumbamailAPI {
         
         // Log the full HTML content to see the exact format
         fs.appendFileSync('/tmp/debug.log', `Acumbamail API - Full HTML content:\n${htmlContent}\n`);
+        
+        // Try different unsubscribe placeholder formats
+        let modifiedHtmlContent = htmlContent;
+        
+        // Replace *|UNSUB|* with different formats to test
+        if (modifiedHtmlContent.includes('*|UNSUB|*')) {
+          console.log('Trying different unsubscribe placeholder formats...');
+          
+          // Try with different formats
+          modifiedHtmlContent = modifiedHtmlContent.replace(/\*\|UNSUB\|\*/g, '{{unsubscribe}}');
+          console.log('Replaced *|UNSUB|* with {{unsubscribe}}');
+          
+          // Log the modified content
+          fs.appendFileSync('/tmp/debug.log', `Acumbamail API - Modified HTML with {{unsubscribe}}:\n${modifiedHtmlContent}\n`);
+        }
+        
+        // Use the modified content
+        htmlContent = modifiedHtmlContent;
       } catch (e) {
         // Ignore file write errors
       }
