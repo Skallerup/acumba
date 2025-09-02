@@ -159,31 +159,7 @@ export class AcumbamailAPI {
         // Log the full HTML content to see the exact format
         fs.appendFileSync('/tmp/debug.log', `Acumbamail API - Full HTML content:\n${htmlContent}\n`);
         
-        // Try different unsubscribe placeholder formats
-        let modifiedHtmlContent = htmlContent;
-        
-        // Force output to stderr
-        process.stderr.write('FORCE DEBUG: Checking for unsubscribe placeholder...\n');
-        process.stderr.write(`FORCE DEBUG: Contains *|UNSUB|*: ${modifiedHtmlContent.includes('*|UNSUB|*')}\n`);
-        
-        // Replace *|UNSUB|* with different formats to test
-        if (modifiedHtmlContent.includes('*|UNSUB|*')) {
-          console.log('Trying different unsubscribe placeholder formats...');
-          process.stderr.write('FORCE DEBUG: Found *|UNSUB|* placeholder, replacing...\n');
-          
-          // Try with different formats
-          modifiedHtmlContent = modifiedHtmlContent.replace(/\*\|UNSUB\|\*/g, '{{unsubscribe}}');
-          console.log('Replaced *|UNSUB|* with {{unsubscribe}}');
-          process.stderr.write('FORCE DEBUG: Replaced *|UNSUB|* with {{unsubscribe}}\n');
-          
-          // Log the modified content
-          fs.appendFileSync('/tmp/debug.log', `Acumbamail API - Modified HTML with {{unsubscribe}}:\n${modifiedHtmlContent}\n`);
-        } else {
-          process.stderr.write('FORCE DEBUG: No *|UNSUB|* placeholder found\n');
-        }
-        
-        // Use the modified content
-        htmlContent = modifiedHtmlContent;
+        // AI now generates {{unsubscribe}} directly, no need for replacement
       } catch (e) {
         // Ignore file write errors
       }
