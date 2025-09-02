@@ -41,7 +41,7 @@ VIGTIGE RETNINGSLINJER:
 8. Inkluder call-to-action knapper med proper styling
 9. Brug dansk sprog i indholdet
 10. Sørg for at farver og styling matcher Bandageshoppen's brand
-11. AFMELD LINK: Acumbamail bruger {{unsubscribe}} placeholder for unsubscribe links. Du skal inkludere <a href="{{unsubscribe}}">Afmeld mig</a> i footeren. Acumbamail erstatter automatisk {{unsubscribe}} med det rigtige afmeld link når emailen sendes.
+11. AFMELD LINK: Acumbamail bruger *|UNSUB|* placeholder for unsubscribe links. Du skal inkludere <a href="*|UNSUB|*">Afmeld mig</a> i footeren. Acumbamail erstatter automatisk *|UNSUB|* med det rigtige afmeld link når emailen sendes.
 
 EKSEMPEL PÅ GOD HTML STRUKTUR:
 \`\`\`html
@@ -62,7 +62,7 @@ EKSEMPEL PÅ GOD HTML STRUKTUR:
               <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
               <p style="font-size: 12px; color: #666; text-align: center;">
                 Sendt fra Bandageshoppen - kontakt@bandageshoppen.dk<br>
-                <a href="{{unsubscribe}}" style="color: #666; text-decoration: underline;">Afmeld mig</a>
+                <a href="*|UNSUB|*" style="color: #666; text-decoration: underline;">Afmeld mig</a>
               </p>
             </td>
           </tr>
