@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
         description: description || null,
         htmlContent,
         category: category || 'general',
+        acumbamailTemplateId: `local-${Date.now()}`, // Generate local template ID
         userId: session.user.id
       }
     });
