@@ -160,6 +160,15 @@ export async function POST(request: NextRequest) {
     console.log('Final HTML content being sent:', finalHtmlContent);
     console.log('Contains unsubscribe placeholder:', finalHtmlContent.includes('*|UNSUB|*'));
     console.log('=== CAMPAIGN DEBUG END ===');
+    
+    // Log to file as well
+    try {
+      fs.appendFileSync('/tmp/debug.log', `Final HTML content length: ${finalHtmlContent?.length || 0}\n`);
+      fs.appendFileSync('/tmp/debug.log', `Contains unsubscribe placeholder: ${finalHtmlContent.includes('*|UNSUB|*')}\n`);
+      fs.appendFileSync('/tmp/debug.log', `Final HTML preview: ${finalHtmlContent?.substring(0, 200) || 'NO CONTENT'}\n`);
+    } catch (e) {
+      // Ignore file write errors
+    }
 
     // Create campaign in database
     const campaign = await prisma.emailCampaign.create({
