@@ -125,6 +125,16 @@ export async function POST(request: NextRequest) {
     // Force output to stderr
     process.stderr.write('FORCE DEBUG: Campaign endpoint called!\n');
     process.stderr.write(`FORCE DEBUG: HTML content length: ${htmlContent?.length || 0}\n`);
+    
+    // Try to write to a file as well
+    const fs = require('fs');
+    try {
+      fs.appendFileSync('/tmp/debug.log', `Campaign endpoint called: ${new Date().toISOString()}\n`);
+      fs.appendFileSync('/tmp/debug.log', `HTML content length: ${htmlContent?.length || 0}\n`);
+      fs.appendFileSync('/tmp/debug.log', `HTML preview: ${htmlContent?.substring(0, 100) || 'NO CONTENT'}\n`);
+    } catch (e) {
+      // Ignore file write errors
+    }
 
     // Ensure we have valid HTML content - provide fallback if empty
     if (!finalHtmlContent || finalHtmlContent.trim() === '') {
