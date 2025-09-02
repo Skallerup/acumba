@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
               <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
               <p style="font-size: 12px; color: #666; text-align: center;">
                 Sendt fra Bandageshoppen - kontakt@bandageshoppen.dk<br>
-                <a href="#" style="color: #666; text-decoration: underline;">Afmeld mig</a>
+                <a href="*|UNSUB|*" style="color: #666; text-decoration: underline;">Afmeld mig</a>
               </p>
             </div>
           </body>
