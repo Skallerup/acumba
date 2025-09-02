@@ -107,13 +107,14 @@ export async function POST(request: NextRequest) {
     // Create campaign in database
     const campaign = await prisma.emailCampaign.create({
       data: {
+        acumbamailCampaignId: `temp-${Date.now()}`, // Temporary ID, will be updated after Acumbamail creation
         name,
         subject,
-        htmlContent: finalHtmlContent,
+        status: 'draft', // Required field
         listId,
         templateId: templateId || null,
         targetAllSubscribers: targetAllSubscribers || false,
-        targetSpecificSubscribers: targetSpecificSubscribers || false,
+        targetSpecificSubscribers: targetSpecificSubscribers || null, // Should be String, not Boolean
         targetFilters: targetFilters ? JSON.stringify(targetFilters) : null,
         userId: session.user.id
       }
