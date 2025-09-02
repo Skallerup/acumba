@@ -167,8 +167,8 @@ export class AcumbamailAPI {
           console.log('Found *|UNSUB|* placeholder, trying different formats...');
           
           // Try with different formats - maybe Acumbamail needs a different format
-          modifiedHtmlContent = modifiedHtmlContent.replace(/\*\|UNSUB\|\*/g, '{{unsubscribe}}');
-          console.log('Replaced *|UNSUB|* with {{unsubscribe}}');
+          modifiedHtmlContent = modifiedHtmlContent.replace(/\*\|UNSUB\|\*/g, '%%unsubscribe%%');
+          console.log('Replaced *|UNSUB|* with %%unsubscribe%%');
           
           // Log the modified content
           fs.appendFileSync('/tmp/debug.log', `Acumbamail API - Modified HTML with {{unsubscribe}}:\n${modifiedHtmlContent}\n`);
