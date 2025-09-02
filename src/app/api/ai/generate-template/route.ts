@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { prompt } = await request.json();
+    console.log('AI Template Generation Request:', { prompt });
 
     if (!prompt || !prompt.trim()) {
       return NextResponse.json({ 
@@ -98,7 +99,10 @@ Generer nu HTML kode baseret på denne beskrivelse:`;
     }
 
     const openaiData = await openaiResponse.json();
+    console.log('OpenAI Response:', openaiData);
+    
     const htmlContent = openaiData.choices[0]?.message?.content?.trim();
+    console.log('Generated HTML Content:', htmlContent);
 
     if (!htmlContent) {
       return NextResponse.json({ 

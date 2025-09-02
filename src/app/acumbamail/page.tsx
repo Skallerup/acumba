@@ -369,10 +369,12 @@ export default function AcumbamailPage() {
       const result = await response.json();
 
       if (result.success) {
+        console.log('AI Response received:', result.htmlContent);
         setAiResponse(result.htmlContent);
         setNewTemplateContent(result.htmlContent);
         setMessage('AI har genereret HTML kode for dit template!');
       } else {
+        console.log('AI Error:', result.error);
         setMessage(result.error || 'Der opstod en fejl under AI generering');
       }
     } catch (error) {
