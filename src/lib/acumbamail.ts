@@ -144,63 +144,8 @@ export class AcumbamailAPI {
 
       const finalCampaignName = campaignName || `Campaign_${Date.now()}`;
 
-      // Try alternative approach: send individual emails to each subscriber
-      console.log('Attempting to send individual emails to all subscribers...');
-      
-      // Get subscribers from the list
-      const subscribersResult = await this.getSubscribers(listId);
-      
-      if (subscribersResult.success && subscribersResult.data) {
-        const subscribers = Object.values(subscribersResult.data);
-        console.log(`Found ${subscribers.length} subscribers to send to`);
-        
-        let successCount = 0;
-        let errorCount = 0;
-        
-        for (const subscriber of subscribers) {
-          try {
-            // Send individual email to each subscriber
-            const emailData = {
-              to: subscriber.email,
-              subject: subject,
-              content: htmlContent,
-              from_name: 'Bandageshoppen',
-              from_email: 'kontakt@bandageshoppen.dk'
-            };
-            
-            console.log(`Sending email to: ${subscriber.email}`);
-            const emailResult = await this.makeRequest('sendEmail', 'POST', emailData);
-            
-            if (emailResult.success) {
-              successCount++;
-              console.log(`Email sent successfully to: ${subscriber.email}`);
-            } else {
-              errorCount++;
-              console.log(`Failed to send email to: ${subscriber.email} - ${emailResult.error}`);
-            }
-          } catch (error) {
-            errorCount++;
-            console.log(`Error sending email to: ${subscriber.email} - ${error}`);
-          }
-        }
-        
-        if (successCount > 0) {
-          return {
-            success: true,
-            data: {
-              campaignId: `individual_${Date.now()}`,
-              message: `Successfully sent ${successCount} emails. ${errorCount} failed.`,
-              messageId: `individual_${Date.now()}`,
-              sentCount: successCount,
-              errorCount: errorCount
-            }
-          };
-        } else {
-          console.log('All individual email sends failed, falling back to campaign method...');
-        }
-      } else {
-        console.log('Could not get subscribers, falling back to campaign method...');
-      }
+      // Use campaign system for proper placeholder replacement (including unsubscribe links)
+      console.log('Using campaign system for proper placeholder replacement...');
 
       // Fallback to original campaign method
       const campaignData = {
