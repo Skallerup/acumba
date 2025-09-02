@@ -1,0 +1,122 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Ikke logget ind' }, { status: 401 });
+    }
+
+    const { prompt } = await request.json();
+
+    if (!prompt || !prompt.trim()) {
+      return NextResponse.json({ 
+        error: 'Beskrivelse af template er påkrævet' 
+      }, { status: 400 });
+    }
+
+    // Check if OpenAI API key is configured
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      return NextResponse.json({ 
+        error: 'OpenAI API nøgle er ikke konfigureret' 
+      }, { status: 500 });
+    }
+
+    // Create the system prompt for email template generation
+    const systemPrompt = `Du er en ekspert i HTML email template design. Din opgave er at generere komplet HTML kode for email templates baseret på brugerens beskrivelse.
+
+VIGTIGE RETNINGSLINJER:
+1. Generer kun HTML kode - ingen forklaringer eller markdown
+2. Brug inline CSS styling (email klienter understøtter ikke eksterne stylesheets)
+3. Sørg for at HTML'en er responsiv og fungerer i alle email klienter
+4. Inkluder altid en proper HTML struktur med <html>, <head>, og <body> tags
+5. Brug table-baseret layout for bedre email klient kompatibilitet
+6. Inkluder altid Bandageshoppen branding (kontakt@bandageshoppen.dk)
+7. Gør designet professionelt og moderne
+8. Inkluder call-to-action knapper med proper styling
+9. Brug dansk sprog i indholdet
+10. Sørg for at farver og styling matcher Bandageshoppen's brand
+
+EKSEMPEL PÅ GOD HTML STRUKTUR:
+\`\`\`html
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Template</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4;">
+    <tr>
+      <td align="center" style="padding: 20px 0;">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <!-- Email content here -->
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+\`\`\`
+
+Generer nu HTML kode baseret på denne beskrivelse:`;
+
+    // Call OpenAI API
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o', // Using GPT-4o (latest model)
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 4000,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!openaiResponse.ok) {
+      const errorData = await openaiResponse.json();
+      console.error('OpenAI API error:', errorData);
+      return NextResponse.json({ 
+        error: 'Der opstod en fejl under AI generering' 
+      }, { status: 500 });
+    }
+
+    const openaiData = await openaiResponse.json();
+    const htmlContent = openaiData.choices[0]?.message?.content?.trim();
+
+    if (!htmlContent) {
+      return NextResponse.json({ 
+        error: 'AI kunne ikke generere HTML kode' 
+      }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      htmlContent: htmlContent,
+      message: 'HTML template genereret succesfuldt'
+    });
+
+  } catch (error) {
+    console.error('AI template generation error:', error);
+    return NextResponse.json({ 
+      error: "Der opstod en fejl under AI generering",
+      details: error instanceof Error ? error.message : "Ukendt fejl"
+    }, { status: 500 });
+  }
+}

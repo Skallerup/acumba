@@ -64,6 +64,9 @@ export default function AcumbamailPage() {
   const [newTemplateDescription, setNewTemplateDescription] = useState('');
   const [newTemplateCategory, setNewTemplateCategory] = useState('general');
   const [newTemplateContent, setNewTemplateContent] = useState('');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
   const [newCampaignName, setNewCampaignName] = useState('');
   const [newCampaignSubject, setNewCampaignSubject] = useState('');
   const [newCampaignListId, setNewCampaignListId] = useState('');
@@ -347,6 +350,38 @@ export default function AcumbamailPage() {
 
 
 
+  const generateWithAI = async () => {
+    if (!aiPrompt.trim()) {
+      setMessage('Indtast venligst en beskrivelse af det ønskede email template');
+      return;
+    }
+
+    setAiLoading(true);
+    setAiResponse('');
+    
+    try {
+      const response = await fetch('/api/ai/generate-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setAiResponse(result.htmlContent);
+        setNewTemplateContent(result.htmlContent);
+        setMessage('AI har genereret HTML kode for dit template!');
+      } else {
+        setMessage(result.error || 'Der opstod en fejl under AI generering');
+      }
+    } catch (error) {
+      setMessage('Der opstod en fejl under AI generering');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const createTemplate = async () => {
     if (!newTemplateName.trim() || !newTemplateContent.trim()) {
       setMessage('Navn og HTML indhold er påkrævet');
@@ -374,6 +409,8 @@ export default function AcumbamailPage() {
         setNewTemplateDescription('');
         setNewTemplateCategory('general');
         setNewTemplateContent('');
+        setAiPrompt('');
+        setAiResponse('');
         await loadData();
       } else {
         setMessage(result.error || 'Ukendt fejl');
@@ -624,6 +661,78 @@ export default function AcumbamailPage() {
                     placeholder="Indtast beskrivelse"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
+                </div>
+              </div>
+
+              {/* AI Assistant */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h4 className="text-lg font-medium text-blue-900 mb-4">🤖 AI Assistent</h4>
+                <p className="text-sm text-blue-700 mb-4">
+                  Beskriv det email template du ønsker, og AI'en vil generere HTML koden for dig.
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Beskriv dit ønskede email template
+                    </label>
+                    <textarea
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      placeholder="F.eks.: 'Lav et udsalgs-email for Bandageshoppen med 20% rabat på alle produkter, inkluder call-to-action knap og produktbilleder'"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={generateWithAI}
+                      disabled={aiLoading || !aiPrompt.trim()}
+                      className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {aiLoading ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Genererer...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Generer med AI
+                        </>
+                      )}
+                    </button>
+                    
+                    {aiResponse && (
+                      <button
+                        onClick={() => {
+                          setNewTemplateContent(aiResponse);
+                          setMessage('AI genereret HTML er nu indsat i editoren!');
+                        }}
+                        className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center gap-2"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Brug AI kode
+                      </button>
+                    )}
+                  </div>
+                  
+                  {aiResponse && (
+                    <div className="mt-4 p-4 bg-white border border-gray-200 rounded-md">
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">AI Genereret HTML:</h5>
+                      <pre className="text-xs text-gray-600 bg-gray-50 p-3 rounded overflow-auto max-h-32">
+                        {aiResponse.substring(0, 500)}{aiResponse.length > 500 ? '...' : ''}
+                      </pre>
+                    </div>
+                  )}
                 </div>
               </div>
 
