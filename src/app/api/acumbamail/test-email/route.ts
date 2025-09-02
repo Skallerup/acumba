@@ -63,7 +63,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Found ${subscribers.length} subscribers in list ${list.name}`);
+    console.log('=== TEST EMAIL DEBUG START ===');
     console.log('Original HTML content:', htmlContent);
+    console.log('HTML content length:', htmlContent?.length || 0);
 
     // Ensure we have valid HTML content - provide fallback if empty
     let finalHtmlContent = htmlContent;
@@ -87,6 +89,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Final HTML content being sent:', finalHtmlContent);
+    console.log('Contains unsubscribe placeholder:', finalHtmlContent.includes('*|UNSUB|*'));
+    console.log('=== TEST EMAIL DEBUG END ===');
 
     // Create test campaign in database
     const campaign = await prisma.emailCampaign.create({
