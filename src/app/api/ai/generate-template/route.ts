@@ -93,8 +93,10 @@ Generer nu HTML kode baseret på denne beskrivelse:`;
     if (!openaiResponse.ok) {
       const errorData = await openaiResponse.json();
       console.error('OpenAI API error:', errorData);
+      console.error('OpenAI Response status:', openaiResponse.status);
+      console.error('OpenAI Response headers:', openaiResponse.headers);
       return NextResponse.json({ 
-        error: 'Der opstod en fejl under AI generering' 
+        error: `OpenAI API fejl: ${errorData.error?.message || 'Ukendt fejl'}` 
       }, { status: 500 });
     }
 
