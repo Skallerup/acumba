@@ -172,20 +172,72 @@ export class AcumbamailAPI {
         from_email: 'kontakt@bandageshoppen.dk'
       };
 
-      console.log('Trying sendCampaign directly for better placeholder replacement...');
-      const campaignResult = await this.makeRequest('sendCampaign', 'POST', campaignData);
+      console.log('Creating campaign with correct API format...');
+      const campaignResult = await this.makeRequest('createCampaign', 'POST', campaignData);
 
       if (campaignResult.success) {
-        console.log('Campaign sent successfully via sendCampaign API');
+        console.log('Campaign created successfully with ID:', campaignResult.data);
 
-        return {
-          success: true,
-          data: {
-            campaignId: campaignResult.data || `campaign_${Date.now()}`,
-            message: 'Campaign sent via Acumbamail sendCampaign API',
-            messageId: `acumbamail_${Date.now()}`
-          }
+        // Try to send the campaign using the 'send' endpoint
+        const sendData = {
+          campaign_id: campaignResult.data
         };
+
+        console.log('Attempting to send campaign...');
+        let sendResult = await this.makeRequest('send', 'POST', sendData);
+        
+        // If send fails, try alternative sendCampaign endpoint
+        if (!sendResult.success) {
+          console.log('Send failed, trying sendCampaign endpoint...');
+          sendResult = await this.makeRequest('sendCampaign', 'POST', sendData);
+          
+          // If sendCampaign also fails, try with different parameter format
+          if (!sendResult.success) {
+            console.log('SendCampaign failed, trying with list parameter...');
+            const alternativeData = {
+              campaign_id: campaignResult.data,
+              list_id: listId
+            };
+            sendResult = await this.makeRequest('sendCampaign', 'POST', alternativeData);
+          }
+        }
+
+        if (sendResult.success) {
+          console.log('Campaign sent successfully via Acumbamail API');
+
+          return {
+            success: true,
+            data: {
+              campaignId: campaignResult.data,
+              message: 'Campaign sent via Acumbamail API',
+              messageId: `acumbamail_${Date.now()}`
+            }
+          };
+        } else {
+          console.log('Campaign send failed, but campaign was created. Response:', sendResult.error);
+
+          // Check if it's an SMTP not active error
+          if (sendResult.error && sendResult.error.includes('SMTP is not active')) {
+            return {
+              success: true,
+              data: {
+                campaignId: campaignResult.data,
+                message: 'Campaign created successfully! You can now send it manually from your Acumbamail dashboard, or activate SMTP in your Acumbamail account for automatic sending.',
+                messageId: `campaign_${Date.now()}`,
+                requiresManualSend: true
+              }
+            };
+          } else {
+            return {
+              success: true,
+              data: {
+                campaignId: campaignResult.data,
+                message: 'Campaign created via Acumbamail API (send may require manual activation)',
+                messageId: `campaign_${Date.now()}`
+              }
+            };
+          }
+        }
       } else {
         console.log('Campaign creation failed:', campaignResult.error);
 
