@@ -53,12 +53,7 @@ export default function AcumbamailPage() {
   const [lists, setLists] = useState<AcumbamailList[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
-  const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
-  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
-  const [importingTemplates, setImportingTemplates] = useState(false);
-  const [templateSearchTerm, setTemplateSearchTerm] = useState('');
-  const [templatePage, setTemplatePage] = useState(1);
-  const [templatesPerPage] = useState(20);
+
   
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -348,81 +343,9 @@ export default function AcumbamailPage() {
     }
   };
 
-  const loadAvailableTemplates = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/acumbamail/available-templates');
-      if (response.ok) {
-        const data = await response.json();
-        setAvailableTemplates(data.templates || []);
-        setMessage(`Fundet ${data.templates?.length || 0} tilgængelige templates`);
-      } else {
-        setMessage('Kunne ikke hente tilgængelige templates');
-      }
-    } catch (error) {
-      setMessage('Der opstod en fejl under hentning af templates');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const importSelectedTemplates = async () => {
-    if (selectedTemplates.length === 0) {
-      setMessage('Vælg mindst én template at importere');
-      return;
-    }
 
-    setImportingTemplates(true);
-    try {
-      const response = await fetch('/api/acumbamail/import-templates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateIds: selectedTemplates })
-      });
 
-      const result = await response.json();
-
-      if (result.success) {
-        setMessage(`Importeret ${result.imported} templates succesfuldt`);
-        setSelectedTemplates([]);
-        await loadData(); // Reload local templates
-        await loadAvailableTemplates(); // Reload available templates
-      } else {
-        setMessage(result.error || 'Fejl ved import af templates');
-      }
-    } catch (error) {
-      setMessage('Der opstod en fejl under import af templates');
-    } finally {
-      setImportingTemplates(false);
-    }
-  };
-
-  const toggleTemplateSelection = (templateId: string) => {
-    setSelectedTemplates(prev => 
-      prev.includes(templateId) 
-        ? prev.filter(id => id !== templateId)
-        : [...prev, templateId]
-    );
-  };
-
-  // Filter and paginate templates
-  const filteredTemplates = availableTemplates.filter(template =>
-    template.name.toLowerCase().includes(templateSearchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredTemplates.length / templatesPerPage);
-  const startIndex = (templatePage - 1) * templatesPerPage;
-  const endIndex = startIndex + templatesPerPage;
-  const paginatedTemplates = filteredTemplates.slice(startIndex, endIndex);
-
-  const handleTemplateSearch = (searchTerm: string) => {
-    setTemplateSearchTerm(searchTerm);
-    setTemplatePage(1); // Reset to first page when searching
-  };
-
-  const handleTemplatePageChange = (page: number) => {
-    setTemplatePage(page);
-  };
 
   const createTemplate = async () => {
     if (!newTemplateName.trim() || !newTemplateContent.trim()) {
@@ -657,10 +580,12 @@ export default function AcumbamailPage() {
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Templates</h2>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Create New Template */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Opret ny template</h3>
+            {/* Template Creation Form */}
+            <div className="space-y-6 mb-8">
+              <h3 className="text-lg font-medium text-gray-900">Opret ny template</h3>
+              
+              {/* Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Template navn
@@ -692,14 +617,19 @@ export default function AcumbamailPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Beskrivelse (valgfrit)
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     value={newTemplateDescription}
                     onChange={(e) => setNewTemplateDescription(e.target.value)}
                     placeholder="Indtast beskrivelse"
-                    rows={2}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
+              </div>
+
+              {/* HTML Editor and Live Preview */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* HTML Editor */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     HTML Indhold
@@ -707,20 +637,50 @@ export default function AcumbamailPage() {
                   <textarea
                     value={newTemplateContent}
                     onChange={(e) => setNewTemplateContent(e.target.value)}
-                    placeholder="Indtast HTML indhold"
-                    rows={8}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                    placeholder="Indtast HTML indhold..."
+                    rows={20}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 font-mono text-sm resize-none"
                   />
                 </div>
+
+                {/* Live Preview */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Live Preview
+                  </label>
+                  <div className="border border-gray-300 rounded-md shadow-sm bg-white h-96 overflow-auto">
+                    {newTemplateContent.trim() ? (
+                      <div 
+                        dangerouslySetInnerHTML={{ __html: newTemplateContent }}
+                        className="p-4"
+                      />
+                    ) : (
+                      <div className="p-4 text-gray-500 text-center">
+                        <div className="mt-20">
+                          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <p className="mt-2">Indtast HTML indhold for at se preview</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Create Button */}
+              <div className="flex justify-end">
                 <button
                   onClick={createTemplate}
                   disabled={loading || !newTemplateName.trim() || !newTemplateContent.trim()}
-                  className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Opretter...' : 'Opret Template'}
                 </button>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Template Management */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -754,145 +714,8 @@ export default function AcumbamailPage() {
               </div>
             </div>
 
-            {/* Template Import Section */}
-            <div className="mt-8 bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Importer Templates fra Acumbamail</h3>
-              
-              <div className="flex gap-4 mb-4">
-                <button
-                  onClick={loadAvailableTemplates}
-                  disabled={loading}
-                  className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Henter...' : 'Hent Alle Templates'}
-                </button>
-                
-                {selectedTemplates.length > 0 && (
-                  <button
-                    onClick={importSelectedTemplates}
-                    disabled={importingTemplates}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {importingTemplates ? 'Importerer...' : `Importer ${selectedTemplates.length} Templates`}
-                  </button>
-                )}
-              </div>
 
-              {/* Search and Pagination Controls */}
-              {availableTemplates.length > 0 && (
-                <div className="mb-4">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        placeholder="Søg i templates..."
-                        value={templateSearchTerm}
-                        onChange={(e) => handleTemplateSearch(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Viser {startIndex + 1}-{Math.min(endIndex, filteredTemplates.length)} af {filteredTemplates.length} templates
-                    </div>
-                  </div>
-                  
-                  {totalPages > 1 && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleTemplatePageChange(templatePage - 1)}
-                        disabled={templatePage === 1}
-                        className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Forrige
-                      </button>
-                      
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                        <button
-                          key={page}
-                          onClick={() => handleTemplatePageChange(page)}
-                          className={`px-3 py-1 text-sm border rounded-md ${
-                            page === templatePage
-                              ? 'bg-blue-500 text-white border-blue-500'
-                              : 'border-gray-300 hover:bg-gray-50'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                      
-                      <button
-                        onClick={() => handleTemplatePageChange(templatePage + 1)}
-                        disabled={templatePage === totalPages}
-                        className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Næste
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
 
-              {availableTemplates.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {paginatedTemplates.map((template) => (
-                    <div 
-                      key={template.id} 
-                      className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                        selectedTemplates.includes(template.id.toString()) 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => toggleTemplateSelection(template.id.toString())}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-gray-900">{template.name}</h4>
-                        <input
-                          type="checkbox"
-                          checked={selectedTemplates.includes(template.id.toString())}
-                          onChange={() => toggleTemplateSelection(template.id.toString())}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                      </div>
-                      
-                      <div className="text-sm text-gray-600 mb-3">
-                        ID: {template.id}
-                      </div>
-                      
-                      {/* Template Preview */}
-                      <div className="bg-white border rounded p-3 text-xs text-gray-500 h-20 overflow-hidden">
-                        {template.available ? (
-                          <div className="text-green-600 font-medium">✓ Tilgængelig</div>
-                        ) : (
-                          <div className="text-red-600 font-medium">✗ Ikke tilgængelig</div>
-                        )}
-                        <div className="mt-1">
-                          {template.name.includes('test') && 'Test template'}
-                          {template.name.includes('velkomst') && 'Velkomst template'}
-                          {template.name.includes('fb_lead') && 'Facebook Lead template'}
-                          {template.name.includes('easter') && 'Påske template'}
-                          {!template.name.includes('test') && !template.name.includes('velkomst') && 
-                           !template.name.includes('fb_lead') && !template.name.includes('easter') && 
-                           'Nyhedsbrev template'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {availableTemplates.length === 0 && !loading && (
-                <p className="text-gray-500 text-center py-8">
-                  Klik "Hent Alle Templates" for at se templates fra Acumbamail
-                </p>
-              )}
-
-              {availableTemplates.length > 0 && paginatedTemplates.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  Ingen templates matcher din søgning "{templateSearchTerm}"
-                </div>
-              )}
-            </div>
-          </div>
         )}
 
 
