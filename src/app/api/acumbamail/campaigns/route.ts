@@ -104,6 +104,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Ensure we have valid HTML content - provide fallback if empty
+    if (!finalHtmlContent || finalHtmlContent.trim() === '') {
+      finalHtmlContent = `
+        <html>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h1 style="color: #2c3e50;">${subject}</h1>
+              <p>Dette er en test email fra Bandageshoppen.</p>
+              <p>Hvis du modtager denne email, fungerer systemet korrekt.</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+              <p style="font-size: 12px; color: #666;">
+                Sendt fra Bandageshoppen - kontakt@bandageshoppen.dk
+              </p>
+            </div>
+          </body>
+        </html>
+      `;
+    }
+
     // Create campaign in database
     const campaign = await prisma.emailCampaign.create({
       data: {
