@@ -155,6 +155,9 @@ export class AcumbamailAPI {
         fs.appendFileSync('/tmp/debug.log', `Acumbamail API - HTML content length: ${htmlContent?.length || 0}\n`);
         fs.appendFileSync('/tmp/debug.log', `Acumbamail API - Contains unsubscribe placeholder: ${htmlContent.includes('*|UNSUB|*')}\n`);
         fs.appendFileSync('/tmp/debug.log', `Acumbamail API - HTML preview: ${htmlContent?.substring(0, 200) || 'NO CONTENT'}\n`);
+        
+        // Log the full HTML content to see the exact format
+        fs.appendFileSync('/tmp/debug.log', `Acumbamail API - Full HTML content:\n${htmlContent}\n`);
       } catch (e) {
         // Ignore file write errors
       }
