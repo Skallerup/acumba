@@ -118,6 +118,13 @@ export async function POST(request: NextRequest) {
     console.error('DEBUG: Campaign endpoint called with HTML content length:', htmlContent?.length || 0);
     console.error('DEBUG: HTML content preview:', htmlContent?.substring(0, 200) || 'NO CONTENT');
     process.stdout.write('DEBUG: Campaign endpoint called!\n');
+    console.error('=== FORCE DEBUG OUTPUT ===');
+    console.error('Campaign endpoint called with HTML content length:', htmlContent?.length || 0);
+    console.error('=== END FORCE DEBUG OUTPUT ===');
+    
+    // Force output to stderr
+    process.stderr.write('FORCE DEBUG: Campaign endpoint called!\n');
+    process.stderr.write(`FORCE DEBUG: HTML content length: ${htmlContent?.length || 0}\n`);
 
     // Ensure we have valid HTML content - provide fallback if empty
     if (!finalHtmlContent || finalHtmlContent.trim() === '') {
