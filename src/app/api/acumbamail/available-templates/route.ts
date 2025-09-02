@@ -28,22 +28,29 @@ export async function GET(request: NextRequest) {
 
     const acumbamail = new AcumbamailAPI(user.acumbamailAuthToken);
     
-    // Get templates from Acumbamail
-    const templatesResult = await acumbamail.getTemplates();
+    // Get all templates from Acumbamail with pagination
+    const templatesResult = await acumbamail.getAllTemplates();
     
     if (templatesResult.success && templatesResult.data) {
       const templatesData = templatesResult.data;
+      console.log(`Available templates API - Total templates received: ${Array.isArray(templatesData) ? templatesData.length : 'Not an array'}`);
       
       // Filter only available templates and format them
       const availableTemplates = Array.isArray(templatesData) 
         ? templatesData
-            .filter(template => template.available === true)
+            .filter(template => {
+              const isAvailable = template.available === true;
+              console.log(`Template ${template.name} (ID: ${template.id}) - available: ${template.available}`);
+              return isAvailable;
+            })
             .map(template => ({
               id: template.id,
               name: template.name,
               available: template.available
             }))
         : [];
+      
+      console.log(`Available templates after filtering: ${availableTemplates.length}`);
 
       return NextResponse.json({
         success: true,

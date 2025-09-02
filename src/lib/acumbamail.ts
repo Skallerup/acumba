@@ -307,8 +307,47 @@ export class AcumbamailAPI {
   }
 
   // Get templates from Acumbamail
-  async getTemplates(): Promise<AcumbamailResponse> {
-    return this.makeRequest('getTemplates', 'GET');
+  async getTemplates(page: number = 1, limit: number = 100): Promise<AcumbamailResponse> {
+    return this.makeRequest('getTemplates', 'GET', { 
+      page: page,
+      limit: limit 
+    });
+  }
+
+  // Get all templates with pagination
+  async getAllTemplates(): Promise<AcumbamailResponse> {
+    try {
+      let allTemplates: any[] = [];
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        console.log(`Fetching templates page ${page}...`);
+        const result = await this.getTemplates(page, 100);
+        
+        if (result.success && result.data) {
+          const templates = Array.isArray(result.data) ? result.data : [];
+          allTemplates = allTemplates.concat(templates);
+          
+          // If we get fewer templates than the limit, we've reached the end
+          hasMore = templates.length === 100;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+      
+      console.log(`Total templates fetched: ${allTemplates.length}`);
+      return {
+        success: true,
+        data: allTemplates
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Failed to fetch all templates: ${error}`
+      };
+    }
   }
 
   // Get specific template HTML content

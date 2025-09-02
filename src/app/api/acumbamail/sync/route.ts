@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
     // 3. Sync Templates (if Acumbamail API supports it)
     console.log("Syncing templates...");
     try {
-      const templatesResult = await acumbamail.getTemplates();
+      const templatesResult = await acumbamail.getAllTemplates();
       if (templatesResult.success && templatesResult.data) {
         const templatesData = templatesResult.data;
         console.log(`Raw templates data type: ${typeof templatesData}, isArray: ${Array.isArray(templatesData)}`);
