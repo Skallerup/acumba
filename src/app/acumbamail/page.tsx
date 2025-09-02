@@ -713,12 +713,8 @@ export default function AcumbamailPage() {
                 )}
               </div>
             </div>
-
-
-
+          </div>
         )}
-
-
 
         {/* Campaigns Tab */}
         {activeTab === 'campaigns' && (
