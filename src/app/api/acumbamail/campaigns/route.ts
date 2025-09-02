@@ -116,6 +116,8 @@ export async function POST(request: NextRequest) {
     console.log('Original HTML content:', htmlContent);
     console.log('HTML content length:', htmlContent?.length || 0);
     console.error('DEBUG: Campaign endpoint called with HTML content length:', htmlContent?.length || 0);
+    console.error('DEBUG: HTML content preview:', htmlContent?.substring(0, 200) || 'NO CONTENT');
+    process.stdout.write('DEBUG: Campaign endpoint called!\n');
 
     // Ensure we have valid HTML content - provide fallback if empty
     if (!finalHtmlContent || finalHtmlContent.trim() === '') {
