@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Found ${subscribers.length} subscribers in list ${list.name}`);
+    console.log('Original HTML content:', htmlContent);
 
     // Ensure we have valid HTML content - provide fallback if empty
     let finalHtmlContent = htmlContent;
@@ -84,6 +85,8 @@ export async function POST(request: NextRequest) {
         </html>
       `;
     }
+
+    console.log('Final HTML content being sent:', finalHtmlContent);
 
     // Create test campaign in database
     const campaign = await prisma.emailCampaign.create({

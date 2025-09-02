@@ -112,6 +112,8 @@ export async function POST(request: NextRequest) {
       console.log('No templateId provided, using htmlContent');
     }
 
+    console.log('Original HTML content:', htmlContent);
+
     // Ensure we have valid HTML content - provide fallback if empty
     if (!finalHtmlContent || finalHtmlContent.trim() === '') {
       console.log('HTML content is empty, using fallback template');
@@ -132,6 +134,8 @@ export async function POST(request: NextRequest) {
         </html>
       `;
     }
+
+    console.log('Final HTML content being sent:', finalHtmlContent);
 
     // Create campaign in database
     const campaign = await prisma.emailCampaign.create({
