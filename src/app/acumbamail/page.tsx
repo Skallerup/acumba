@@ -372,7 +372,8 @@ export default function AcumbamailPage() {
         console.log('AI Response received:', result.htmlContent);
         setAiResponse(result.htmlContent);
         setNewTemplateContent(result.htmlContent);
-        setMessage('AI har genereret HTML kode for dit template!');
+        setNewCampaignContent(result.htmlContent); // Also set campaign content
+        setMessage('AI har genereret HTML kode for dit template og campaign!');
       } else {
         console.log('AI Error:', result.error);
         setMessage(result.error || 'Der opstod en fejl under AI generering');
