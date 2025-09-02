@@ -56,6 +56,9 @@ export default function AcumbamailPage() {
   const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [importingTemplates, setImportingTemplates] = useState(false);
+  const [templateSearchTerm, setTemplateSearchTerm] = useState('');
+  const [templatePage, setTemplatePage] = useState(1);
+  const [templatesPerPage] = useState(20);
   
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -402,6 +405,25 @@ export default function AcumbamailPage() {
     );
   };
 
+  // Filter and paginate templates
+  const filteredTemplates = availableTemplates.filter(template =>
+    template.name.toLowerCase().includes(templateSearchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredTemplates.length / templatesPerPage);
+  const startIndex = (templatePage - 1) * templatesPerPage;
+  const endIndex = startIndex + templatesPerPage;
+  const paginatedTemplates = filteredTemplates.slice(startIndex, endIndex);
+
+  const handleTemplateSearch = (searchTerm: string) => {
+    setTemplateSearchTerm(searchTerm);
+    setTemplatePage(1); // Reset to first page when searching
+  };
+
+  const handleTemplatePageChange = (page: number) => {
+    setTemplatePage(page);
+  };
+
   const createTemplate = async () => {
     if (!newTemplateName.trim() || !newTemplateContent.trim()) {
       setMessage('Navn og HTML indhold er påkrævet');
@@ -742,7 +764,7 @@ export default function AcumbamailPage() {
                   disabled={loading}
                   className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Henter...' : 'Hent Tilgængelige Templates'}
+                  {loading ? 'Henter...' : 'Hent Alle Templates'}
                 </button>
                 
                 {selectedTemplates.length > 0 && (
@@ -756,9 +778,63 @@ export default function AcumbamailPage() {
                 )}
               </div>
 
+              {/* Search and Pagination Controls */}
+              {availableTemplates.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        placeholder="Søg i templates..."
+                        value={templateSearchTerm}
+                        onChange={(e) => handleTemplateSearch(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Viser {startIndex + 1}-{Math.min(endIndex, filteredTemplates.length)} af {filteredTemplates.length} templates
+                    </div>
+                  </div>
+                  
+                  {totalPages > 1 && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleTemplatePageChange(templatePage - 1)}
+                        disabled={templatePage === 1}
+                        className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Forrige
+                      </button>
+                      
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        <button
+                          key={page}
+                          onClick={() => handleTemplatePageChange(page)}
+                          className={`px-3 py-1 text-sm border rounded-md ${
+                            page === templatePage
+                              ? 'bg-blue-500 text-white border-blue-500'
+                              : 'border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      
+                      <button
+                        onClick={() => handleTemplatePageChange(templatePage + 1)}
+                        disabled={templatePage === totalPages}
+                        className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Næste
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {availableTemplates.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {availableTemplates.map((template) => (
+                  {paginatedTemplates.map((template) => (
                     <div 
                       key={template.id} 
                       className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
@@ -806,8 +882,14 @@ export default function AcumbamailPage() {
 
               {availableTemplates.length === 0 && !loading && (
                 <p className="text-gray-500 text-center py-8">
-                  Klik "Hent Tilgængelige Templates" for at se templates fra Acumbamail
+                  Klik "Hent Alle Templates" for at se templates fra Acumbamail
                 </p>
+              )}
+
+              {availableTemplates.length > 0 && paginatedTemplates.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  Ingen templates matcher din søgning "{templateSearchTerm}"
+                </div>
               )}
             </div>
           </div>

@@ -149,11 +149,17 @@ export async function POST(request: NextRequest) {
       const templatesResult = await acumbamail.getTemplates();
       if (templatesResult.success && templatesResult.data) {
         const templatesData = templatesResult.data;
+        console.log(`Raw templates data type: ${typeof templatesData}, isArray: ${Array.isArray(templatesData)}`);
+        console.log(`Total templates received: ${Array.isArray(templatesData) ? templatesData.length : 'Not an array'}`);
         
         // Convert array of objects to array of templates (only available ones)
         const templates = Array.isArray(templatesData) 
           ? templatesData
-              .filter(template => template.available === true) // Only import available templates
+              .filter(template => {
+                const isAvailable = template.available === true;
+                console.log(`Template ${template.name} (ID: ${template.id}) - available: ${template.available}`);
+                return isAvailable;
+              }) // Only import available templates
               .map(template => ({
                 id: template.id,
                 name: template.name,
@@ -162,6 +168,8 @@ export async function POST(request: NextRequest) {
                 category: 'imported'
               }))
           : [];
+        
+        console.log(`Filtered templates count: ${templates.length}`);
         
         for (const template of templates) {
           // Check if template already exists
