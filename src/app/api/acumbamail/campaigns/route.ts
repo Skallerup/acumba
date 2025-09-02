@@ -91,6 +91,8 @@ export async function POST(request: NextRequest) {
 
     // Get template content if templateId is provided
     let finalHtmlContent = htmlContent;
+    console.log(`Campaign creation - templateId: ${templateId}, htmlContent length: ${htmlContent?.length || 0}`);
+    
     if (templateId) {
       const template = await prisma.emailTemplate.findFirst({
         where: { 
@@ -102,6 +104,7 @@ export async function POST(request: NextRequest) {
       if (template) {
         finalHtmlContent = template.htmlContent;
         console.log(`Using template: ${template.name} with content length: ${template.htmlContent.length}`);
+        console.log(`Template HTML content preview: ${template.htmlContent.substring(0, 100)}...`);
       } else {
         console.log(`Template not found with ID: ${templateId}`);
       }

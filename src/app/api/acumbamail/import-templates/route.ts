@@ -75,12 +75,25 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
+        // Try to get HTML content for this template
+        let htmlContent = '';
+        try {
+          const templateResult = await acumbamail.getTemplate(templateId);
+          if (templateResult.success && templateResult.data) {
+            htmlContent = templateResult.data.html_content || templateResult.data.content || '';
+            console.log(`Retrieved HTML content for template ${acumbamailTemplate.name}: ${htmlContent.length} characters`);
+          }
+        } catch (error) {
+          console.log(`Could not retrieve HTML content for template ${acumbamailTemplate.name}:`, error);
+        }
+
         // Create new template
         await prisma.emailTemplate.create({
           data: {
+            acumbamailTemplateId: templateId,
             name: acumbamailTemplate.name,
             description: `Importeret fra Acumbamail: ${acumbamailTemplate.name}`,
-            htmlContent: '', // We don't get HTML content from getTemplates
+            htmlContent: htmlContent,
             category: 'imported',
             userId: session.user.id
           }
