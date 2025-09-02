@@ -103,8 +103,23 @@ Generer nu HTML kode baseret på denne beskrivelse:`;
     const openaiData = await openaiResponse.json();
     console.log('OpenAI Response:', openaiData);
     
-    const htmlContent = openaiData.choices[0]?.message?.content?.trim();
-    console.log('Generated HTML Content:', htmlContent);
+    const rawContent = openaiData.choices[0]?.message?.content?.trim();
+    console.log('Raw AI Content:', rawContent);
+    
+    // Remove markdown code block markers if present
+    let htmlContent = rawContent;
+    if (htmlContent.startsWith('```html')) {
+      htmlContent = htmlContent.replace(/^```html\s*/, '');
+    }
+    if (htmlContent.startsWith('```')) {
+      htmlContent = htmlContent.replace(/^```\s*/, '');
+    }
+    if (htmlContent.endsWith('```')) {
+      htmlContent = htmlContent.replace(/\s*```$/, '');
+    }
+    
+    htmlContent = htmlContent.trim();
+    console.log('Cleaned HTML Content:', htmlContent);
 
     if (!htmlContent) {
       return NextResponse.json({ 
