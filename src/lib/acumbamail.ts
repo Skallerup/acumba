@@ -146,6 +146,18 @@ export class AcumbamailAPI {
 
       // Use campaign system for proper placeholder replacement (including unsubscribe links)
       console.log('Using campaign system for proper placeholder replacement...');
+      console.log('HTML content being sent to Acumbamail:', htmlContent.substring(0, 200));
+      console.log('Contains unsubscribe placeholder:', htmlContent.includes('*|UNSUB|*'));
+      
+      // Log to file as well
+      const fs = require('fs');
+      try {
+        fs.appendFileSync('/tmp/debug.log', `Acumbamail API - HTML content length: ${htmlContent?.length || 0}\n`);
+        fs.appendFileSync('/tmp/debug.log', `Acumbamail API - Contains unsubscribe placeholder: ${htmlContent.includes('*|UNSUB|*')}\n`);
+        fs.appendFileSync('/tmp/debug.log', `Acumbamail API - HTML preview: ${htmlContent?.substring(0, 200) || 'NO CONTENT'}\n`);
+      } catch (e) {
+        // Ignore file write errors
+      }
 
       // Fallback to original campaign method
       const campaignData = {
