@@ -172,6 +172,18 @@ export async function POST(request: NextRequest) {
             }
           });
           
+          // Try to get HTML content for this template
+          let htmlContent = '';
+          try {
+            const templateResult = await acumbamail.getTemplate(String(template.id));
+            if (templateResult.success && templateResult.data) {
+              htmlContent = templateResult.data.html_content || templateResult.data.content || '';
+              console.log(`Retrieved HTML content for template ${template.name}: ${htmlContent.length} characters`);
+            }
+          } catch (error) {
+            console.log(`Could not retrieve HTML content for template ${template.name}:`, error);
+          }
+          
           if (!existingTemplate) {
             // Create new template
             await prisma.emailTemplate.create({
@@ -179,12 +191,20 @@ export async function POST(request: NextRequest) {
                 acumbamailTemplateId: String(template.id),
                 name: String(template.name),
                 description: String(template.description),
-                htmlContent: String(template.htmlContent),
+                htmlContent: htmlContent,
                 category: String(template.category),
                 userId: session.user.id
               }
             });
             syncResults.templates.created++;
+          } else if (htmlContent && !existingTemplate.htmlContent) {
+            // Update existing template with HTML content if it's missing
+            await prisma.emailTemplate.update({
+              where: { id: existingTemplate.id },
+              data: { htmlContent: htmlContent }
+            });
+            syncResults.templates.updated++;
+            console.log(`Updated template ${template.name} with HTML content`);
           }
         }
       }

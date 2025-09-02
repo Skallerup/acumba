@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     // Get template content if templateId is provided
     let finalHtmlContent = htmlContent;
-    if (templateId && !htmlContent) {
+    if (templateId) {
       const template = await prisma.emailTemplate.findFirst({
         where: { 
           id: templateId,
@@ -101,11 +101,17 @@ export async function POST(request: NextRequest) {
       
       if (template) {
         finalHtmlContent = template.htmlContent;
+        console.log(`Using template: ${template.name} with content length: ${template.htmlContent.length}`);
+      } else {
+        console.log(`Template not found with ID: ${templateId}`);
       }
+    } else {
+      console.log('No templateId provided, using htmlContent');
     }
 
     // Ensure we have valid HTML content - provide fallback if empty
     if (!finalHtmlContent || finalHtmlContent.trim() === '') {
+      console.log('HTML content is empty, using fallback template');
       finalHtmlContent = `
         <html>
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">

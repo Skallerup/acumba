@@ -311,6 +311,11 @@ export class AcumbamailAPI {
     return this.makeRequest('getTemplates', 'GET');
   }
 
+  // Get specific template HTML content
+  async getTemplate(templateId: string): Promise<AcumbamailResponse> {
+    return this.makeRequest('getTemplate', 'GET', { template_id: templateId });
+  }
+
   // Test API connection - use getLists as it's confirmed working
   async testConnection(): Promise<AcumbamailResponse> {
     console.log('Testing connection with token:', this.authToken.substring(0, 8) + '...');
