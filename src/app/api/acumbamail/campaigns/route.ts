@@ -112,7 +112,9 @@ export async function POST(request: NextRequest) {
       console.log('No templateId provided, using htmlContent');
     }
 
+    console.log('=== CAMPAIGN DEBUG START ===');
     console.log('Original HTML content:', htmlContent);
+    console.log('HTML content length:', htmlContent?.length || 0);
 
     // Ensure we have valid HTML content - provide fallback if empty
     if (!finalHtmlContent || finalHtmlContent.trim() === '') {
@@ -136,6 +138,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Final HTML content being sent:', finalHtmlContent);
+    console.log('Contains unsubscribe placeholder:', finalHtmlContent.includes('*|UNSUB|*'));
+    console.log('=== CAMPAIGN DEBUG END ===');
 
     // Create campaign in database
     const campaign = await prisma.emailCampaign.create({
