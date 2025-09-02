@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
     console.log('=== TEST EMAIL DEBUG START ===');
     console.log('Original HTML content:', htmlContent);
     console.log('HTML content length:', htmlContent?.length || 0);
+    console.error('DEBUG: Test email endpoint called with HTML content length:', htmlContent?.length || 0);
 
     // Ensure we have valid HTML content - provide fallback if empty
     let finalHtmlContent = htmlContent;
