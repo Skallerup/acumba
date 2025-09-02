@@ -75,8 +75,9 @@ export async function POST(request: NextRequest) {
               <p>Dette er en test email fra Bandageshoppen.</p>
               <p>Hvis du modtager denne email, fungerer systemet korrekt.</p>
               <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-              <p style="font-size: 12px; color: #666;">
-                Sendt fra Bandageshoppen - kontakt@bandageshoppen.dk
+              <p style="font-size: 12px; color: #666; text-align: center;">
+                Sendt fra Bandageshoppen - kontakt@bandageshoppen.dk<br>
+                <a href="#" style="color: #666; text-decoration: underline;">Afmeld mig</a>
               </p>
             </div>
           </body>

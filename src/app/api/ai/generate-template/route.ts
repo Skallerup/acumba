@@ -41,6 +41,7 @@ VIGTIGE RETNINGSLINJER:
 8. Inkluder call-to-action knapper med proper styling
 9. Brug dansk sprog i indholdet
 10. Sørg for at farver og styling matcher Bandageshoppen's brand
+11. AFMELD LINK: Acumbamail tilføjer automatisk afmeld links, men du skal inkludere "Afmeld mig" tekst i footeren. Acumbamail erstatter automatisk denne tekst med det rigtige afmeld link når emailen sendes.
 
 EKSEMPEL PÅ GOD HTML STRUKTUR:
 \`\`\`html
@@ -55,7 +56,16 @@ EKSEMPEL PÅ GOD HTML STRUKTUR:
     <tr>
       <td align="center" style="padding: 20px 0;">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <!-- Email content here -->
+          <tr>
+            <td style="padding: 20px;">
+              <!-- Email content here -->
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+              <p style="font-size: 12px; color: #666; text-align: center;">
+                Sendt fra Bandageshoppen - kontakt@bandageshoppen.dk<br>
+                <a href="#" style="color: #666; text-decoration: underline;">Afmeld mig</a>
+              </p>
+            </td>
+          </tr>
         </table>
       </td>
     </tr>
