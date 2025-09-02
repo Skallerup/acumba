@@ -313,7 +313,34 @@ export class AcumbamailAPI {
 
   // Get specific template HTML content
   async getTemplate(templateId: string): Promise<AcumbamailResponse> {
-    return this.makeRequest('getTemplate', 'GET', { template_id: templateId });
+    // Try different possible endpoints for getting template content
+    try {
+      // First try getTemplate with template_id parameter
+      let result = await this.makeRequest('getTemplate', 'GET', { template_id: templateId });
+      if (result.success) {
+        return result;
+      }
+      
+      // If that fails, try getTemplates with template_id filter
+      result = await this.makeRequest('getTemplates', 'GET', { template_id: templateId });
+      if (result.success) {
+        return result;
+      }
+      
+      // If that fails, try getTemplateContent
+      result = await this.makeRequest('getTemplateContent', 'GET', { template_id: templateId });
+      if (result.success) {
+        return result;
+      }
+      
+      // If all fail, return the last error
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        error: `Failed to get template ${templateId}: ${error}`
+      };
+    }
   }
 
   // Test API connection - use getLists as it's confirmed working
